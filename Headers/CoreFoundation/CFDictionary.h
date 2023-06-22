@@ -29,6 +29,7 @@
 
 #include <CoreFoundation/CFBase.h>
 
+CF_IMPLICIT_BRIDGING_ENABLED
 CF_EXTERN_C_BEGIN
 /** \ingroup CFDictionaryRef */
 typedef const struct __CFDictionary *CFDictionaryRef;
@@ -171,4 +172,5 @@ CFDictionarySetValue (CFMutableDictionaryRef theDict, const void *key,
 /** \} */
 
 CF_EXTERN_C_END
+CF_IMPLICIT_BRIDGING_DISABLED
 #endif /* __COREFOUNDATION_CFDICTIONARY_H__ */

@@ -462,3 +462,20 @@ CFTypeID CFNullGetTypeID (void);
 
 CF_EXTERN_C_END
 #endif /* __COREFOUNDATION_CFBASE_H__ */
+
+
+#ifndef CF_IMPLICIT_BRIDGING_ENABLED
+#  if __has_feature(arc_cf_code_audited)
+#    define CF_IMPLICIT_BRIDGING_ENABLED _Pragma("clang arc_cf_code_audited begin")
+#  else
+#    define CF_IMPLICIT_BRIDGING_ENABLED
+#  endif
+#endif
+
+#ifndef CF_IMPLICIT_BRIDGING_DISABLED
+#  if __has_feature(arc_cf_code_audited)
+#    define CF_IMPLICIT_BRIDGING_DISABLED _Pragma("clang arc_cf_code_audited end")
+#  else
+#    define CF_IMPLICIT_BRIDGING_DISABLED
+#  endif
+#endif
