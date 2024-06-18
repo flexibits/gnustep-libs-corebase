@@ -112,14 +112,18 @@ AC_ARG_ENABLE(cfrunloop,
 AC_ARG_WITH([icu],
   AS_HELP_STRING([--without-icu],
     [Disable Internation Components for Unicode. WARNING: Many components will stop working without ICU support!]), [], [with_icu=yes])
+AC_ARG_ENABLE(windows-icu,
+  [  --disable-windows-icu		Don't use the ICU library provided by Windows 10 and up],,
+  enable_windows_icu=yes)
 AS_IF([test x"with_icu" != xno],
   [found_icu=no
-  AS_CASE([$target_os],
-    [mingw*|windows], [ # check for ICU bundled with Windows 10
-      AC_CHECK_LIB(icu, udat_open,
-        [AC_CHECK_HEADERS([icu.h], [found_icu=yes
-          LIBS="$LIBS -licu"
-          AC_MSG_NOTICE([Using ICU DLL from Windows 10 (requires version 1903)])])])])
+  AS_IF([test x"enable_windows_icu" = "xyes"],
+    [AS_CASE([$target_os],
+      [mingw*|windows], [ # check for ICU bundled with Windows 10
+        AC_CHECK_LIB(icu, udat_open,
+          [AC_CHECK_HEADERS([icu.h], [found_icu=yes
+            LIBS="$LIBS -licu"
+            AC_MSG_NOTICE([Using ICU DLL from Windows 10 (requires version 1903)])])])])])
   AS_IF([test $found_icu = no],
     [PKG_CHECK_MODULES([ICU], [icu-i18n > 49.0])
     LIBS="$LIBS $ICU_LIBS"; CFLAGS="$CFLAGS $ICU_CFLAGS"; INCLUDE_FLAGS="$INCLUDE_FLAGS $ICU_CFLAGS"

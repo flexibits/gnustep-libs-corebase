@@ -709,6 +709,7 @@ ac_user_opts='
 enable_option_checking
 enable_cfrunloop
 with_icu
+enable_windows_icu
 with_gcd
 with_objc
 with_zoneinfo
@@ -1358,6 +1359,7 @@ Optional Features:
 --disable-cfrunloop
     Disables CFRunLoop support and requiring pthread.
     Must be passed when building on Windows.
+  --disable-windows-icu		Don't use the ICU library provided by Windows 10 and up
 
 Optional Packages:
   --with-PACKAGE[=ARG]    use PACKAGE [ARG=yes]
@@ -5184,6 +5186,13 @@ else
   with_icu=yes
 fi
 
+# Check whether --enable-windows-icu was given.
+if test "${enable_windows_icu+set}" = set; then :
+  enableval=$enable_windows_icu;
+else
+  enable_windows_icu=yes
+fi
+
 
 
 
@@ -5306,10 +5315,11 @@ $as_echo "no" >&6; }
 fi
 if test x"with_icu" != xno; then :
   found_icu=no
+  if test x"enable_windows_icu" = "xyes"; then :
   case $target_os in #(
   mingw*|windows) :
      # check for ICU bundled with Windows 10
-      { $as_echo "$as_me:${as_lineno-$LINENO}: checking for udat_open in -licu" >&5
+        { $as_echo "$as_me:${as_lineno-$LINENO}: checking for udat_open in -licu" >&5
 $as_echo_n "checking for udat_open in -licu... " >&6; }
 if ${ac_cv_lib_icu_udat_open+:} false; then :
   $as_echo_n "(cached) " >&6
@@ -5354,8 +5364,8 @@ if test "x$ac_cv_header_icu_h" = xyes; then :
 #define HAVE_ICU_H 1
 _ACEOF
  found_icu=yes
-          LIBS="$LIBS -licu"
-          { $as_echo "$as_me:${as_lineno-$LINENO}: Using ICU DLL from Windows 10 (requires version 1903)" >&5
+            LIBS="$LIBS -licu"
+            { $as_echo "$as_me:${as_lineno-$LINENO}: Using ICU DLL from Windows 10 (requires version 1903)" >&5
 $as_echo "$as_me: Using ICU DLL from Windows 10 (requires version 1903)" >&6;}
 fi
 
@@ -5366,6 +5376,7 @@ fi
   *) :
      ;;
 esac
+fi
   if test $found_icu = no; then :
 
 pkg_failed=no
