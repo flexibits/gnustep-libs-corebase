@@ -581,39 +581,62 @@ CFSocketSendData (CFSocketRef s, CFDataRef address, CFDataRef data,
   struct sockaddr* addr = NULL;
   socklen_t len;
   int err;
+#if defined(_WIN32)
+  /* Winsock's SO_SNDTIMEO takes a DWORD count of milliseconds, not a timeval. */
+  DWORD tv = (DWORD)(timeout * 1000);
+#else
   struct timeval tv;
-  
-  if (CFSocketIsValid (s) == false || address == NULL || data == NULL)
+#endif
+
+  if (CFSocketIsValid (s) == false || address == NULL || data == NULL) {
     return kCFSocketError;
-  
+  }
+
+#if !defined(_WIN32)
   tv.tv_sec = (int) floor(timeout);
   tv.tv_usec = (timeout - tv.tv_sec) * 1000000;
-  
-  err = setsockopt(s->_socket, SOL_SOCKET, SO_SNDTIMEO, &tv,
-                   sizeof(struct timeval));
-  
-  if (err != 0)
+#endif
+
+  err = setsockopt(s->_socket, SOL_SOCKET, SO_SNDTIMEO,
+                   (const char *)&tv, sizeof(tv));
+
+  if (err != 0) {
     return kCFSocketError;
-  
+  }
+
   if (address != NULL)
     {
       addr = (struct sockaddr*) CFDataGetBytePtr(address);
       len = CFDataGetLength(address);
-      
-      err = sendto(s->_socket, CFDataGetBytePtr(data), 0,
-                   CFDataGetLength(data), addr, len);
+
+      err = sendto(s->_socket, (const char *)CFDataGetBytePtr(data),
+                   CFDataGetLength(data), 0, addr, len);
     }
   else
     {
-      err = send(s->_socket, CFDataGetBytePtr(data),
+      err = send(s->_socket, (const char *)CFDataGetBytePtr(data),
                  CFDataGetLength(data), 0);
     }
+
   if (err == 0)
-    return kCFSocketSuccess;
+    {
+      return kCFSocketSuccess;
+    }
+#if defined(_WIN32)
+  else if (CFSocketGetLastError() == WSAEWOULDBLOCK)
+    {
+      return kCFSocketTimeout;
+    }
+#else
   else if (errno == EAGAIN || errno == EWOULDBLOCK)
-    return kCFSocketTimeout;
+    {
+      return kCFSocketTimeout;
+    }
+#endif
   else
-    return kCFSocketError;
+    {
+      return kCFSocketError;
+    }
 }
 
 void
