@@ -79,8 +79,11 @@
 #endif /* _WIN64 */
 
 
-#define GSAtomicCompareAndSwapPointer(ptr, oldv, newv) \
-  InterlockedCompareExchangePointer((ptr), (newv), (oldv))
+/* Casts match the sibling CFIndex macro above: InterlockedCompareExchangePointer
+ * wants PVOID volatile* / PVOID, and callers pass CF-typed const pointers.      */
+#define GSAtomicCompareAndSwapPointer(ptr, oldv, newv)                  \
+  InterlockedCompareExchangePointer((PVOID volatile *)(ptr),            \
+                                    (PVOID)(newv), (PVOID)(oldv))
 
 #else /* _WIN32 */
 
